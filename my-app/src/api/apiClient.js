@@ -12,11 +12,14 @@ const apiClient = axios.create({
 // and adds it to the 'Authorization' header.
 apiClient.interceptors.request.use(
   (config) => {
+     console.log('Axios interceptor is running...');
     // --- Replace this with your actual token management logic ---
     // Example: const token = useAuthStore.getState().token;
     const userInfo = localStorage.getItem('userInfo'); // Assuming you store user info here
+     console.log('Retrieved from localStorage:', userInfo);
     if (userInfo) {
       const token = JSON.parse(userInfo).token;
+       console.log('Token being attached:', token);
       if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
       }

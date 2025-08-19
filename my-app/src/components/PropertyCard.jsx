@@ -7,9 +7,8 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
-
 // --- DEFINE YOUR BACKEND URL HERE ---
-const BACKEND_URL = 'http://localhost:5001';
+const BACKEND_URL = 'http://localhost:5000';
 
 const toLakhs = (rupees) => {
   if (rupees === undefined || rupees === null) return 'N/A';

@@ -31,21 +31,24 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
   const commonAmenities = ['Parking', 'Gym', 'Swimming Pool', '24/7 Security', 'Power Backup', 'Lift', 'Garden', 'Clubhouse', 'Kids Play Area'];
 
   const handleChange = (e) => {
-    const { id, value, type, checked, files } = e.target;
-    if (type === 'checkbox') {
-      setFormData((prev) => ({
-        ...prev,
-        amenities: checked
-          ? [...prev.amenities, value]
-          : prev.amenities.filter((item) => item !== value),
-      }));
-    } else if (type === 'file') {
-      const newImages = Array.from(files).filter(file => !prev.images.some(existingFile => existingFile.name === file.name));
-      setFormData((prev) => ({ ...prev, images: [...prev.images, ...newImages] }));
-    } else {
-      setFormData((prev) => ({ ...prev, [id]: value }));
-    }
-  };
+  const { id, value, type, checked, files } = e.target;
+  if (type === 'checkbox') {
+    setFormData((prev) => ({
+      ...prev,
+      amenities: checked
+        ? [...prev.amenities, value]
+        : prev.amenities.filter((item) => item !== value),
+    }));
+  } else if (type === 'file') {
+    // --- THIS IS THE FIX ---
+    // Change 'prev' to 'formData' to access the current state's images
+    const newImages = Array.from(files).filter(file => !formData.images.some(existingFile => existingFile.name === file.name));
+    
+    setFormData((prev) => ({ ...prev, images: [...prev.images, ...newImages] }));
+  } else {
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  }
+};
 
   const handleRemoveImage = (indexToRemove) => {
     setFormData((prev) => ({
@@ -93,6 +96,7 @@ export default function AddPropertyModal({ onClose, onAddProperty }) {
     // The parent component (`PropertyManagement`) is responsible for handling
     // the form submission, including the API call and state updates.
     // This modal simply passes the collected form data upwards.
+      
     onAddProperty(formData);
   };
 

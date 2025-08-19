@@ -1,5 +1,6 @@
 import express from "express";
-import multer from "multer"; 
+import upload from "../middleware/uploadMiddleware.js";
+
 import {
   createProperty,
   deleteProperty,
@@ -16,9 +17,12 @@ const router = express.Router();
 // --- Multer Configuration for Image Uploads ---
 // This tells multer to store uploaded files in memory.
 // We can then process them in the controller.
-const upload = multer({ storage: multer.memoryStorage() });
 
-router.route("/").get(getProperties).post(protect, admin, upload.array("images",3),createProperty);
+
+router
+.route("/")
+.get(getProperties)
+.post(protect, admin, upload.array("images",3),createProperty);
 router
   .route("/:id")
   .get(getPropertyById)

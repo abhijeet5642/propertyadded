@@ -39,10 +39,8 @@ const getPropertyById = async (req, res) => {
 // @access  Private/Admin
 const createProperty = async (req, res) => {
 
-   console.log('--- Multer Debug ---');
-  console.log('Request Body:', req.body); // This will show all text fields
-  console.log('Request Files:', req.files); // This should show your uploaded files
-  console.log('--------------------'); 
+  // This should show your uploaded files
+  
   
   const {
     title,
@@ -82,7 +80,9 @@ const createProperty = async (req, res) => {
     };
 
     // Get the filenames from multer if they exist
-    const imageFilenames = req.files ? req.files.map(file => file.filename) : [];
+  const imagePaths = (Array.isArray(req.files) ? req.files : [])
+  .map(file => `${file.filename}`);
+
 
     // --- Step 3: Create the property with clean, validated data ---
     const property = await Property.create({
@@ -99,7 +99,8 @@ const createProperty = async (req, res) => {
       location: `${locality}, ${city}`,
       locality,
       city,
-      images: imageFilenames,
+     images: imagePaths,
+
       videoUrls: JSON.parse(videoUrls || '[]'),
       amenities: JSON.parse(amenities || '[]'),
       locationCoords: {
@@ -109,6 +110,7 @@ const createProperty = async (req, res) => {
       agent: req.user._id,
       submittedBy,
     });
+    console.log("data saved to database", property)
 
     res.status(201).json(property);
   } catch (error) {
@@ -125,42 +127,46 @@ const createProperty = async (req, res) => {
 // @route   PUT /api/properties/:id
 // @access  Private/Admin
 const updateProperty = async (req, res) => {
-  // This function would also need to be updated to handle file uploads
-  // if you want to update images. For now, it only updates text fields.
-  const {
-    title,
-    description,
-    price,
-    location,
-    bedrooms,
-    bathrooms,
-    area,
-    images,
-  } = req.body;
-
   try {
     const property = await Property.findById(req.params.id);
 
-    if (property) {
-      property.title = title || property.title;
-      property.description = description || property.description;
-      property.price = price || property.price;
-      property.location = location || property.location;
-      property.bedrooms = bedrooms || property.bedrooms;
-      property.bathrooms = bathrooms || property.bathrooms;
-      property.area = area || property.area;
-      property.images = images || property.images;
-
-      const updatedProperty = await property.save();
-      res.json(updatedProperty);
-    } else {
-      res.status(404).json({ message: "Property not found" });
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
     }
+
+    // New uploaded images
+    const newImages = (Array.isArray(req.files) ? req.files : [])
+      .map(file => `/uploads/${file.filename}`);
+
+    // If frontend also passes old images to keep
+    let existingImages = [];
+    if (req.body.existingImages) {
+      try {
+        existingImages = JSON.parse(req.body.existingImages);
+      } catch {
+        existingImages = [];
+      }
+    }
+
+    property.title = req.body.title || property.title;
+    property.description = req.body.description || property.description;
+    property.price = req.body.price || property.price;
+    property.location = req.body.location || property.location;
+    property.bedrooms = req.body.bedrooms || property.bedrooms;
+    property.bathrooms = req.body.bathrooms || property.bathrooms;
+    property.area = req.body.area || property.area;
+
+    // Replace with old+new images
+    property.images = [...existingImages, ...newImages];
+
+    const updatedProperty = await property.save();
+    res.json(updatedProperty);
   } catch (error) {
-    console.error(error);
+    console.error("Error updating property:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
+
 
 // @desc    Delete a property
 // @route   DELETE /api/properties/:id

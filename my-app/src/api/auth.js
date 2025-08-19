@@ -1,7 +1,7 @@
 // import api from './axiosConfig';
 import api from './apiClient'; // Import the configured axios instance
 
-const LS_KEY = 'pnwb-user';
+const LS_KEY = 'userInfo';
 
 /**
  * Get the currently logged-in user data from localStorage.
